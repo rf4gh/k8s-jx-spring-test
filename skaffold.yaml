@@ -1,0 +1,31 @@
+apiVersion: skaffold/v1alpha2
+kind: Config
+build:
+  tagPolicy:
+    envTemplate:
+      template: "{{.DOCKER_REGISTRY}}/rf4gh/k8s-jx-spring-test:{{.VERSION}}"
+  artifacts:
+  - imageName: changeme
+    workspace: .
+    docker: {}
+  local: {}
+deploy:
+  kubectl:
+    manifests:
+profiles:
+- name: dev
+  build:
+    tagPolicy:
+      envTemplate:
+        template: "{{.DOCKER_REGISTRY}}/rf4gh/k8s-jx-spring-test:{{.DIGEST_HEX}}"
+    artifacts:
+    - docker: {}
+    local: {}
+  deploy:
+    helm:
+      releases:
+      - name: k8s-jx-spring-test
+        chartPath: charts/k8s-jx-spring-test
+        setValueTemplates:
+          image.repository: "{{.DOCKER_REGISTRY}}/rf4gh/k8s-jx-spring-test"
+          image.tag: "{{.DIGEST_HEX}}"
